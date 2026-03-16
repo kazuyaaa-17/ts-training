@@ -4,6 +4,8 @@ import TodoItem from "./components/TodoItem";
 import { useEffect, useState } from "react";
 import { todo } from "./types/todo";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Home() {
 
   const [todos,setTodos] = useState<todo[]>([]);
@@ -11,7 +13,7 @@ export default function Home() {
 
   useEffect(()=>{
     const load = async ()=>{
-      const res = await fetch('http://localhost:3001/todo');
+      const res = await fetch(`${API_URL}/todo`);
       const data = await res.json();
       setTodos(data);
     }
@@ -23,7 +25,7 @@ export default function Home() {
 
 
   async function add(){
-    const res = await fetch('http://localhost:3001/todo',
+    const res = await fetch(`${API_URL}/todo`,
       {method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: inputValue })});
@@ -33,12 +35,12 @@ export default function Home() {
   }
 
   async function remove(id:number){
-    const res = await fetch(`http://localhost:3001/todo/${id}`,{method: 'DELETE'});
+    const res = await fetch(`${API_URL}/todo/${id}`,{method: 'DELETE'});
     setTodos(todos.filter((todo)=> todo.id !== id));
   }
 
   async function toggleTodo(id:number){
-    const res = await fetch(`http://localhost:3001/todo/${id}/toggle`,{method: 'PATCH'});
+    const res = await fetch(`${API_URL}/todo/${id}/toggle`,{method: 'PATCH'});
     setTodos(todos.map((todo)=> todo.id===id ? {...todo,done:!todo.done} : todo));
   }
 
