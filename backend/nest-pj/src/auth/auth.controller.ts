@@ -1,7 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateAuthDto } from './dto/create-auth.dto';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -13,13 +14,25 @@ export class AuthController {
     }
 
     @Post('login')
-    async login(@Body() body: CreateAuthDto){
+    async login(@Body() body: CreateAuthDto, @Res() res:Response){
         const user = await this.authService.validateUser(body.email,body.password);
-        if (!user) return null;
-        return this.jwtService.sign({ sub: user.id, email:user.email});
-
+        if (!user) return res.status(401).send({message: 'Authorization Error'});
+        const token = this.jwtService.sign({ sub: user.id, email:user.email});
+        res.cookie(
+            'token',token,{
+                httpOnly:true,
+                sameSite:'none',
+                secure:true,
+            }
+        );
+        return res.send({ok:true});
     }
 
+    @Post('logout')
+    logout(@Res() res:Response){
+        res.clearCookie('token', { httpOnly: true, sameSite: 'none', secure: true });
+        return res.send({ok:true});
 
+    }
 
 }

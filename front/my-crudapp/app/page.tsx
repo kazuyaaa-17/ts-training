@@ -14,13 +14,12 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(()=>{
-    const token = localStorage.getItem('token');
-    if (!token){
-      router.replace('/login');
-      return;
-    }
     const load = async ()=>{
-      const res = await fetch(`${API_URL}/todo`,{headers: { 'Authorization' : `Bearer ${localStorage.getItem('token')}`}});
+      const res = await fetch(`${API_URL}/todo`,{credentials:'include',});
+      if(res.status==401){
+        router.replace('/login');
+        return;
+      }
       const data = await res.json();
       setTodos(data);
     }
@@ -35,8 +34,8 @@ export default function Home() {
     const res = await fetch(`${API_URL}/todo`,
       {method: 'POST',
       headers: { 'Content-Type': 'application/json',
-        'Authorization' : `Bearer ${localStorage.getItem('token')}`
        },
+       credentials:'include',
       body: JSON.stringify({ title: inputValue })});
     const data = await res.json();
     setTodos([...todos ,data]);
@@ -44,21 +43,21 @@ export default function Home() {
   }
 
   async function remove(id:number){
-    const res = await fetch(`${API_URL}/todo/${id}`,{method: 'DELETE',
-      headers: {'Authorization' : `Bearer ${localStorage.getItem('token')}`}
+    await fetch(`${API_URL}/todo/${id}`,{method: 'DELETE',
+      credentials:'include',
     });
     setTodos(todos.filter((todo)=> todo.id !== id));
   }
 
   async function toggleTodo(id:number){
-    const res = await fetch(`${API_URL}/todo/${id}/toggle`,{method: 'PATCH',
-      headers : {'Authorization' : `Bearer ${localStorage.getItem('token')}`}
+    await fetch(`${API_URL}/todo/${id}/toggle`,{method: 'PATCH',
+      credentials:'include',
     });
     setTodos(todos.map((todo)=> todo.id===id ? {...todo,done:!todo.done} : todo));
   }
 
-  function logout(){
-    localStorage.removeItem('token');
+  async function logout(){
+    await fetch(`${API_URL}/auth/logout`,{method:'POST',credentials:'include',});
     router.replace('/login');
   }
 

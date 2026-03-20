@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -12,12 +11,11 @@ export default function LoginPage(){
   const router = useRouter();
 
   async function login(){
-    const res= await fetch(`${API_URL}/auth/login`,
+    await fetch(`${API_URL}/auth/login`,
       {method: 'POST',
         headers: { 'Content-Type' : 'application/json'},
+        credentials:'include',
         body: JSON.stringify({email:email,password:password})});
-    const data = await res.text();
-    localStorage.setItem('token',data);
     router.replace('/');
   }
 
